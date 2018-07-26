@@ -11,7 +11,7 @@
 			<DebugSettings
 				Command="$(TargetPath)"
 				WorkingDirectory=""
-				CommandArguments=""
+				CommandArguments="C:\Users\wangbihong\Desktop\test.cab 1.txt C:\Users\wangbihong\Desktop\test1.cab"
 				Attach="false"
 				DebuggerType="3"
 				Remote="1"

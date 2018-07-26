@@ -171,6 +171,18 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\AutoSign.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\CheckThread.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Connection.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\FileManager.cpp"
 				>
 			</File>
@@ -188,6 +200,18 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\AutoSign.h"
+				>
+			</File>
+			<File
+				RelativePath=".\CheckThread.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Connection.h"
+				>
+			</File>
 			<File
 				RelativePath=".\FileManager.h"
 				>

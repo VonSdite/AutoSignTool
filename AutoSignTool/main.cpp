@@ -1,11 +1,12 @@
-#include "FileManager.h"
-#include <iostream>
+#include <Windows.h>
+#include <tchar.h>
 
-using namespace std;
-
+#include "AutoSign.h"
 
 int _tmain(int argc, TCHAR const *argv[])
 {
-    wcout << FileManager::CreateDateDir(TEXT("\\\\10.91.44.19\\FileServer\\usr\\wangbihong\\input")) << endl;
+    //AutoSign *autoSign = new AutoSign(argc, argv);
+    //autoSign->run();
+
     return 0;
 }

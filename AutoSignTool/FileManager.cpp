@@ -1,10 +1,12 @@
 #include "FileManager.h"
-#include <cstring>
 #include <stdlib.h>
 #include <time.h>
 #include <strsafe.h>
+#include <sstream>
+#include <shlwapi.h>
+#pragma comment(lib, "shlwapi.lib") 
 
-PCTSTR FileManager::CreateDateDir(PCTSTR targetPath)
+std::wstring FileManager::CreateDateDir(const std::wstring szTargetPath)
 {
     // 设置随机数种子
     static BOOL isSetRand = FALSE;
@@ -18,31 +20,62 @@ PCTSTR FileManager::CreateDateDir(PCTSTR targetPath)
     GetLocalTime(&localTime);
 
     // 要创建的目录名
-    PTSTR dirName = (PTSTR)malloc(sizeof(TCHAR)*100);
-    memset(dirName, 0, sizeof(dirName));
-    swprintf_s(
-        dirName, 
-        100,
-        TEXT("ENTSign_%d%02d%02d_%03d%04x%04x\\\0"), 
-        localTime.wYear, 
-        localTime.wMonth, 
-        localTime.wDay,
-        localTime.wMilliseconds,
-        rand() % 0x10000,
-        rand() % 0x10000
-    );
+    std::wstringstream ss;
+    ss << L"ENTSign_" 
+        << localTime.wYear
+        << localTime.wMonth
+        << localTime.wDay
+        << localTime.wMilliseconds
+        << L"_"
+        << rand() % 0x10000
+        << rand() % 0x10000
+        << L"\\";
+    std::wstring szDirName = ss.str();
 
     // 在指定路径创建文件夹
-    TCHAR dir[361];
-    swprintf_s(
-        dir,
-        361,
-        TEXT("%s\\%s"),
-        targetPath,
-        dirName
-    );
-    CreateDirectory(dir, NULL);
+    std::wstring szDir = szTargetPath + L"\\" + szDirName;
+   
+    CreateDirectory(szDir.c_str(), NULL);
 
-    return dirName;
+    return szDirName;
 }
 
+BOOL FileManager::CopyFileTo( 
+         std::wstring lpExistingFileName, 
+         std::wstring lpNewFileName, 
+         BOOL bFailIfExists
+)
+{
+    return CopyFile(lpExistingFileName.c_str(), lpNewFileName.c_str(), bFailIfExists);
+}
+
+BOOL FileManager::FileExist(LPCTSTR lpFilePath)
+{
+    return PathFileExists(lpFilePath);
+}
+
+LPTSTR FileManager::GetFileName(LPCTSTR lpPath)
+{
+    return PathFindFileName(lpPath);
+}
+
+void FileManager::CreateFile(
+     std::wstring lpFileName, 
+     DWORD dwDesiredAccess /* = GENERIC_WRITE */, 
+     DWORD dwShareMode /* = NULL */, 
+     LPSECURITY_ATTRIBUTES lpSecurityAttributes /* = NULL */, 
+     DWORD dwCreationDisposition /* = CREATE_ALWAYS */, 
+     DWORD dwFlagsAndAttributes /* = FILE_ATTRIBUTE_NORMAL */, 
+     HANDLE hTemplateFile /* = NULL */
+)
+{
+    ::CreateFile(        
+        lpFileName.c_str(),
+        dwDesiredAccess,
+        dwShareMode,
+        lpSecurityAttributes,
+        dwCreationDisposition,
+        dwFlagsAndAttributes,
+        hTemplateFile
+    );
+}
