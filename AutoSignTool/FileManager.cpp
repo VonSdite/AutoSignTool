@@ -33,7 +33,7 @@ std::wstring FileManager::CreateDateDir(const std::wstring szTargetPath)
     std::wstring szDirName = ss.str();
 
     // 在指定路径创建文件夹
-    std::wstring szDir = szTargetPath + L"\\" + szDirName;
+    std::wstring szDir = szTargetPath + szDirName;
    
     CreateDirectory(szDir.c_str(), NULL);
 
@@ -69,7 +69,7 @@ void FileManager::CreateFile(
      HANDLE hTemplateFile /* = NULL */
 )
 {
-    ::CreateFile(        
+     HANDLE hWnd = ::CreateFile(        
         lpFileName.c_str(),
         dwDesiredAccess,
         dwShareMode,
@@ -78,4 +78,5 @@ void FileManager::CreateFile(
         dwFlagsAndAttributes,
         hTemplateFile
     );
+    CloseHandle(hWnd);
 }

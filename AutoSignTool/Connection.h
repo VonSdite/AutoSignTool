@@ -4,9 +4,6 @@
 #include <Windows.h>
 #include <tchar.h>
 #include <string>
-#include <WinNetWk.h>
-
-#pragma comment(lib, "Mpr.lib")
 
 class Connection
 {
@@ -20,7 +17,6 @@ private:
     std::wstring szSeverName;
     std::wstring szPasswd;
     std::wstring szUserName;
-    NETRESOURCE netResource;
 
 };
 

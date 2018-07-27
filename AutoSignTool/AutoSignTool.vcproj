@@ -220,6 +220,10 @@
 				RelativePath=".\Ini.h"
 				>
 			</File>
+			<File
+				RelativePath=".\Thread.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="资源文件"

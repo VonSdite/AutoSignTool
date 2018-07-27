@@ -1,48 +1,75 @@
 #include "Connection.h"
 #include <cstring>
 #include <stdio.h>
+#include <iostream>
+
+std::wstring ExeCmd(std::wstring pszCmd);
 
 Connection::Connection(std::wstring szSeverName, std::wstring szPasswd, std::wstring szUserName)
 {
     this->szSeverName = szSeverName;
     this->szPasswd = szPasswd;
     this->szUserName = szUserName;
-
-    memset(&netResource, 0, sizeof(netResource));
-    
 }
 
 BOOL Connection::Connect()
 {
-    netResource.dwDisplayType = RESOURCEDISPLAYTYPE_DIRECTORY;
-    netResource.dwScope = RESOURCE_CONNECTED;
-    netResource.dwType = RESOURCETYPE_ANY;
-    netResource.dwUsage = 0;
-    netResource.lpComment = TEXT("");
-    netResource.lpLocalName = TEXT("Z:");                  // 映射成本地驱动器Z:
-    netResource.lpProvider= NULL;
-    netResource.lpRemoteName = (LPWSTR)szSeverName.c_str();  // \\servername\共享资源名
-
-    DWORD dwFlags = CONNECT_UPDATE_PROFILE;
-    DWORD dw = WNetAddConnection2(&netResource, szPasswd.c_str(), szUserName.c_str(), dwFlags);
-
-    if (dw == ERROR_SESSION_CREDENTIAL_CONFLICT)
-    {
-        return TRUE;
-    }
-    else if(dw != NO_ERROR)
-    {
-        _tprintf(TEXT("[Error] The password or the user name for the login shared folder is incorrect.\nOr shared resource folder path is incorrect.\n"));
-        DisConnect();
-        return FALSE;
-    }
-    
+    std::wstring strCmdLine = std::wstring(L"net use ") + szSeverName + L" " + szPasswd + L" /user:" + szUserName;
+    std::wstring strCmdReturn = ExeCmd(L"net use \\\\10.91.44.19\\FileServer\\usr\\wangbihong\\input ops123! /user:administrator");
+    std::wcout << strCmdReturn << std::endl; 
     return TRUE;
 }
 
 void Connection::DisConnect()
 {
-    //断开共享连接
-    WNetCancelConnection2(netResource.lpLocalName, CONNECT_UPDATE_PROFILE, true);
-    WNetCancelConnection2(netResource.lpRemoteName, CONNECT_UPDATE_PROFILE, true);
+
+}
+
+
+std::wstring ExeCmd(std::wstring pszCmd)
+{
+    // 创建匿名管道
+    SECURITY_ATTRIBUTES sa = {sizeof(SECURITY_ATTRIBUTES), NULL, TRUE};
+    HANDLE hRead, hWrite;
+    if (!CreatePipe(&hRead, &hWrite, &sa, 0))
+    {
+        return TEXT(" ");
+    }
+
+    // 设置命令行进程启动信息(以隐藏方式启动命令并定位其输出到hWrite
+    STARTUPINFO si = {sizeof(STARTUPINFO)};
+    GetStartupInfo(&si);
+    si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
+    si.wShowWindow = SW_HIDE;
+    si.hStdError = hWrite;
+    si.hStdOutput = hWrite;
+
+    // 启动命令行
+    PROCESS_INFORMATION pi;
+    if (!CreateProcess(NULL, (LPWSTR)pszCmd.c_str(), NULL, NULL, TRUE, NULL, NULL, NULL, &si, &pi))
+    {
+        return TEXT("Cannot create process");
+    }
+
+    // 立即关闭hWrite
+    CloseHandle(hWrite);
+
+    // 读取命令行返回值
+    std::wstring strRet;
+    std::string strRetTmp;
+    char buff[1024] = {0};
+    DWORD dwRead = 0;
+    strRetTmp = buff;
+    while (ReadFile(hRead, buff, 1024, &dwRead, NULL))
+    {
+        strRetTmp += buff;
+    }
+    CloseHandle(hRead);
+
+    int nLen = (int)strRetTmp.length();    
+    strRet.resize(nLen, L' ');
+
+    MultiByteToWideChar(CP_ACP,0,(LPCSTR)strRetTmp.c_str(),nLen,(LPWSTR)strRet.c_str(),nLen);
+
+    return strRet;
 }

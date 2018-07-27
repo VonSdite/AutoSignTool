@@ -1,23 +1,23 @@
-#ifndef __THREAD__
-#define __THREAD__
+#ifndef __CHECK__THREAD__
+#define __CHECK__THREAD__
 
-#include <process.h>
-#include <Windows.h>
-#include <tchar.h>
+#include "Thread.h"
+#include <string>
 
-class CheckThread 
-{  
+class CheckThread : public Thread
+{
 private:
     std::wstring szFileName1;
     std::wstring szFileName2;
 
-public:  
+    BOOL bSuccess;
 
+    virtual void run();
+
+public:
     CheckThread(std::wstring szFileName1, std::wstring szFileName2);
-
-    static unsigned __stdcall start(void * pThis);
-
-    void run();
-};  
+    
+    BOOL isSuccess() { return bSuccess; }
+};
 
 #endif

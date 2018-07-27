@@ -5,8 +5,7 @@
 
 int _tmain(int argc, TCHAR const *argv[])
 {
-    //AutoSign *autoSign = new AutoSign(argc, argv);
-    //autoSign->run();
-
+    AutoSign *autoSign = new AutoSign(argc, argv);
+    autoSign->run();
     return 0;
 }
