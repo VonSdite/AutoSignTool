@@ -51,6 +51,9 @@ BOOL FileManager::CopyFileTo(
 
 BOOL FileManager::FileExist(LPCTSTR lpFilePath)
 {
+	/*WIN32_FIND_DATA wfd;
+	HANDLE hFind = FindFirstFile(lpFilePath, &wfd);
+	return (hFind != INVALID_HANDLE_VALUE) && (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);*/
     return PathFileExists(lpFilePath);
 }
 
@@ -79,4 +82,12 @@ void FileManager::CreateFile(
         hTemplateFile
     );
     CloseHandle(hWnd);
+}
+
+std::wstring FileManager::PathBackFlashRemove(std::wstring path)
+{
+	if (path.empty()) return path;
+	path.erase(path.find_last_not_of('\\') + 1);
+	path.erase(path.find_last_not_of('/') + 1);
+	return path;
 }

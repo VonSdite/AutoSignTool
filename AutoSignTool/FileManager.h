@@ -31,6 +31,8 @@ public:
         DWORD dwFlagsAndAttributes = FILE_ATTRIBUTE_NORMAL,
         HANDLE hTemplateFile = NULL);
 
+	static std::wstring PathBackFlashRemove(std::wstring path);
+
 private:
     FileManager(){};
     FileManager(const FileManager &){};

@@ -18,6 +18,8 @@ private:
     std::wstring szPasswd;
     std::wstring szUserName;
 
+	std::wstring ExeCmd(std::wstring strCmdLine);
+
 };
 
 #endif
