@@ -39,6 +39,10 @@ public:
             WaitForSingleObject(hThread, nTimeOutMs);
     }
     
+	~Thread()
+	{
+		CloseHandle(hThread);
+	}
 };  
 
 #endif
