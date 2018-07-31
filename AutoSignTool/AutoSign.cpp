@@ -27,11 +27,6 @@ void AutoSign::run()
 
             connect->DisConnect();      // 断开连接
         }
-	    else 
-	    {
-		    std::wcout.imbue(std::locale("chs"));	
-		    wcout << L"[Error 2] 共享文件夹连接失败" << endl;
-	    }
     }
 }
 
@@ -207,6 +202,11 @@ void AutoSign::CreateSignIni()
         }
         else
         {
+            if (!FileManager::FileExist(serverInputDirName.c_str()))
+            {
+                wcout << "[Error 10] "<< serverInputDirName + L" 签名输入文件路径有误" << endl;
+                exit(-1);
+            }
             wcout << arrCabPath[i] + L" 文件不存在" << endl;
         }
     }
@@ -227,6 +227,11 @@ void AutoSign::GetOutputFile()
     );
     
 	std::wcout.imbue(std::locale("chs"));	
+    if (!FileManager::FileExist(serverOutputDirName.c_str()))
+    {
+        wcout << "[Error 11] "<< serverOutputDirName + L" 签名输出文件路径有误" << endl;
+        exit(-1);
+    }
 	wcout << L"正在签名\n";
     checkThread->start(nTimeOut);
     if (checkThread->isSuccess())

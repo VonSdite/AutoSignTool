@@ -39,3 +39,4 @@
 *.ilk
 *.pdb
 *.res
+Debug/config.ini
