@@ -1,11 +1,13 @@
 #include <process.h>
 #include <iostream>
 #include <cstring>
+#include <map>
 
 #include "FileManager.h"
 #include "CheckThread.h"
 #include "Ini.h"
 #include "AutoSign.h"
+#include "Parse.h"
 
 using namespace std;
 
@@ -31,15 +33,13 @@ void AutoSign::run()
 
 }
 
-AutoSign::AutoSign(int argc, TCHAR const **argv)
+AutoSign::AutoSign(int argc, TCHAR **argv)
 {
 	bConfigExist = ReadFromConfig(); // 从配置文件读取配置
 	if (bConfigExist)
 	{
 		ParseArgv(argc, argv);
 		connect = new Connection(serverInputDirName, szRemotePassword, szRemoteUserName);
-		
-		szOutputPath = L"C:\\Users\\Sdite\\Desktop\\test\\";
 	}
 }
 
@@ -50,7 +50,7 @@ AutoSign::~AutoSign()
 
 BOOL AutoSign::ReadFromConfig()
 {
-    if (!FileManager::FileExist(L"E:/1Code/Repositories/C++/AutoSignTool/Debug/config.ini"))
+    if (!FileManager::FileExist(L".\\config.ini"))
 	{
 		std::wcout.imbue(std::locale("chs"));	
 		wcout << L"[Error 1] 找不到配置文件config.ini" << endl;
@@ -97,28 +97,73 @@ BOOL AutoSign::ReadFromConfig()
 	return TRUE;
 }
 
-void AutoSign::ParseArgv(int argc, TCHAR const **argv)
+void trim(std::wstring &s, TCHAR ch) 
+{
+    if (s.empty()) 
+    {
+        return ;
+    }
+
+    s.erase(0, s.find_first_not_of(ch));
+    s.erase(s.find_last_not_of(ch) + 1);
+}
+
+void AutoSign::ParseArgv(int argc, TCHAR **argv)
 {
 	std::wcout.imbue(std::locale("chs"));	
 	if (argc != 3)
 	{
 		wcout << L"[Error 4] 命令行参数个数不对" << endl;
+        exit(-1);
 	}
 	else
 	{
-		wstring cabPath = argv[1];
-		szOutputPath = argv[2];
+		map<std::wstring, std::wstring> mp;
+        mp = Parse::GetPair(argc, argv, L"=");
+        if (mp.size() != 2) 
+        {
+            wcout << L"[Error 5] 命令行参数格式不对" << endl;
+            exit(-1);
+        }
+        szOutputPath = mp[L"output"];
+        if (szOutputPath.empty())
+        {
+            wcout << L"[Error 6] 命令行参数缺少最终输出路径, output=XXX" << endl;
+            exit(-1);
+        }
+        //if (szOutputPath[0] != L'\"' || szOutputPath[szOutputPath.size()-1] != L'\"')
+        //{
+        //    wcout << L"[Error 7] 路径应使用英文双引号引起来" << endl;
+        //    exit(-1);
+        //}
+        //trim(szOutputPath, L'\"');
+
+        arrCabPath = Parse::SplitString(mp[L"cab"], L";");
+        if (arrCabPath.empty())
+        {
+            wcout << L"[Error 8] 命令行参数缺少cab文件路径, cab=XXX" << endl;
+            exit(-1);
+        }
+        //for (size_t i = 0; i < arrCabPath.size(); ++i)
+        //{
+        //    if (arrCabPath[i][0] != L'\"'|| arrCabPath[i][arrCabPath[i].size()-1] != L'\"')
+        //    {
+        //        wcout << L"[Error 7] 路径应使用英文双引号引起来" << endl;
+        //        exit(-1);
+        //    }
+        //    trim(arrCabPath[i], L'\"');
+        //}
 
 	}
 }
 
 void AutoSign::CreateSignIni()
 {
-    for (int i = 1; i < argc; ++i)
+    for (size_t i = 0; i < arrCabPath.size(); ++i)
     {
-        LPTSTR lpFileName = FileManager::GetFileName(argv[i]);
+        LPTSTR lpFileName = FileManager::GetFileName(arrCabPath[i].c_str());
         if (FileManager::CopyFileTo(
-            argv[i], 
+            arrCabPath[i], 
             serverInputDirName + szDateDirName + lpFileName
             )
         )
@@ -158,9 +203,9 @@ void AutoSign::GetOutputFile()
     checkThread->start(nTimeOut);
     if (checkThread->isSuccess())
     {
-        for (int i = 1; i < argc; ++i)
+        for (size_t i = 0; i < arrCabPath.size(); ++i)
         {
-            LPTSTR lpFileName = FileManager::GetFileName(argv[i]);
+            LPTSTR lpFileName = FileManager::GetFileName(arrCabPath[i].c_str());
             FileManager::CopyFileTo(
                 serverOutputDirName + szDateDirName + lpFileName, 
                 szOutputPath + lpFileName

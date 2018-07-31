@@ -36,7 +36,6 @@ public:
 private:
     FileManager(){};
     FileManager(const FileManager &){};
-    ~FileManager(){};
 };
 
 #endif

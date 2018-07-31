@@ -87,7 +87,7 @@ void FileManager::CreateFile(
 std::wstring FileManager::PathBackFlashRemove(std::wstring path)
 {
 	if (path.empty()) return path;
-	path.erase(path.find_last_not_of('\\') + 1);
-	path.erase(path.find_last_not_of('/') + 1);
+	path.erase(path.find_last_not_of(L'\\') + 1);
+	path.erase(path.find_last_not_of(L'/') + 1);
 	return path;
 }

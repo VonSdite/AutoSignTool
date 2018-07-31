@@ -10,7 +10,7 @@
 class AutoSign
 {
 public:
-    AutoSign(int argc, TCHAR const **argv);
+    AutoSign(int argc, TCHAR **argv);
     ~AutoSign();
     void run();
 
@@ -20,7 +20,7 @@ private:
 	std::wstring szOutputPath;							// 最终签名文件保存的位置
 
 	BOOL ReadFromConfig();								// 读取配置文件
-	void ParseArgv(int argc, TCHAR const **argv);		// 解析命令行参数
+	void ParseArgv(int argc, TCHAR **argv);		// 解析命令行参数
 
     // 以下从配置文件读入
     std::wstring szRemoteUserName;   // 登录共享文件夹用户名

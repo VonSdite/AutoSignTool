@@ -34,8 +34,6 @@ public:
 private:
     Ini() {};
     Ini(const Ini &ini) {};
-    ~Ini(){};
-
 };
 
 #endif
