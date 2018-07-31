@@ -50,7 +50,12 @@ AutoSign::~AutoSign()
 
 BOOL AutoSign::ReadFromConfig()
 {
-    if (!FileManager::FileExist(L".\\config.ini"))
+    TCHAR _szPath[MAX_PATH + 1]={0};
+    GetModuleFileName(NULL, _szPath, MAX_PATH);
+    (_tcsrchr(_szPath, _T('\\')))[1] = 0; //删除文件名，只获得路径 字串
+    wstring strConfigPath = _szPath;
+    strConfigPath += L"config.ini";
+    if (!FileManager::FileExist(strConfigPath.c_str()))
 	{
 		std::wcout.imbue(std::locale("chs"));	
 		wcout << L"[Error 1] 找不到配置文件config.ini" << endl;
@@ -75,24 +80,24 @@ BOOL AutoSign::ReadFromConfig()
 	TCHAR buffer[1000];	
 	memset(buffer, 0, sizeof(buffer));
 
-	Ini::ReadStringFromIni(L"config.ini", L"userName", L"", buffer, 1000, L".\\config.ini");
+	Ini::ReadStringFromIni(L"config.ini", L"userName", L"", buffer, 1000, strConfigPath.c_str());
 	szRemoteUserName = buffer;
 
-	Ini::ReadStringFromIni(L"config.ini", L"password", L"", buffer, 1000, L".\\config.ini");
+	Ini::ReadStringFromIni(L"config.ini", L"password", L"", buffer, 1000, strConfigPath.c_str());
 	szRemotePassword = buffer;
 
-	Ini::ReadStringFromIni(L"config.ini", L"signType", L"", buffer, 1000, L".\\config.ini");
+	Ini::ReadStringFromIni(L"config.ini", L"signType", L"", buffer, 1000, strConfigPath.c_str());
 	szSignType = buffer;
 
-	Ini::ReadStringFromIni(L"config.ini", L"signInputFile", L"", buffer, 1000, L".\\config.ini");
+	Ini::ReadStringFromIni(L"config.ini", L"signInputFile", L"", buffer, 1000, strConfigPath.c_str());
 	serverInputDirName = buffer;
 	serverInputDirName += L"\\";
 
-	Ini::ReadStringFromIni(L"config.ini", L"signOutputFile", L"", buffer, 1000, L".\\config.ini");
+	Ini::ReadStringFromIni(L"config.ini", L"signOutputFile", L"", buffer, 1000, strConfigPath.c_str());
 	serverOutputDirName = buffer;
 	serverOutputDirName += L"\\";
 
-	nTimeOut = Ini::ReadIntFromIni(L"config.ini", L"timeOut", 5, L".\\config.ini") * 60 * 1000;
+	nTimeOut = Ini::ReadIntFromIni(L"config.ini", L"timeOut", 5, strConfigPath.c_str()) * 60 * 1000;
 
 	return TRUE;
 }
@@ -131,6 +136,7 @@ void AutoSign::ParseArgv(int argc, TCHAR **argv)
             wcout << L"[Error 6] 命令行参数缺少最终输出路径, output=XXX" << endl;
             exit(-1);
         }
+        szOutputPath += L"\\";
         //if (szOutputPath[0] != L'\"' || szOutputPath[szOutputPath.size()-1] != L'\"')
         //{
         //    wcout << L"[Error 7] 路径应使用英文双引号引起来" << endl;
@@ -142,6 +148,21 @@ void AutoSign::ParseArgv(int argc, TCHAR **argv)
         if (arrCabPath.empty())
         {
             wcout << L"[Error 8] 命令行参数缺少cab文件路径, cab=XXX" << endl;
+            exit(-1);
+        }
+        
+        BOOL isCabValid = FALSE; 
+        for (size_t i = 0; i < arrCabPath.size(); ++i)
+        {
+            if (FileManager::FileExist(arrCabPath[i].c_str()))
+            {
+                isCabValid = TRUE;
+                break;
+            }
+        }
+        if (!isCabValid)
+        {
+            wcout << L"[Error 9] 无有效cab文件路径" << endl;
             exit(-1);
         }
         //for (size_t i = 0; i < arrCabPath.size(); ++i)
@@ -159,6 +180,7 @@ void AutoSign::ParseArgv(int argc, TCHAR **argv)
 
 void AutoSign::CreateSignIni()
 {
+    std::wcout.imbue(std::locale("chs"));	
     for (size_t i = 0; i < arrCabPath.size(); ++i)
     {
         LPTSTR lpFileName = FileManager::GetFileName(arrCabPath[i].c_str());
@@ -180,6 +202,10 @@ void AutoSign::CreateSignIni()
                 L"\"" + szSignType + L"\"",
                 serverInputDirName + szDateDirName + L"sign_config.ini"
                 );
+        }
+        else
+        {
+            wcout << arrCabPath[i] + L" 文件不存在" << endl;
         }
     }
 }
@@ -203,6 +229,11 @@ void AutoSign::GetOutputFile()
     checkThread->start(nTimeOut);
     if (checkThread->isSuccess())
     {
+        if (!FileManager::FileExist(szOutputPath.c_str()))
+        {
+            FileManager::CreateDir(szOutputPath);
+        }
+
         for (size_t i = 0; i < arrCabPath.size(); ++i)
         {
             LPTSTR lpFileName = FileManager::GetFileName(arrCabPath[i].c_str());

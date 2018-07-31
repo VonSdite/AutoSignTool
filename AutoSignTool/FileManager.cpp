@@ -91,3 +91,9 @@ std::wstring FileManager::PathBackFlashRemove(std::wstring path)
 	path.erase(path.find_last_not_of(L'/') + 1);
 	return path;
 }
+
+void FileManager::CreateDir(std::wstring path)
+{
+    std::wstring cmd = std::wstring(L"md ") + path;
+    _tsystem(cmd.c_str());
+}

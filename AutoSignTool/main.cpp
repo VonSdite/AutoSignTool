@@ -3,9 +3,6 @@
 
 #include "AutoSign.h"
 #include "Ini.h"
-#include <iostream>
-#include <string>
-using namespace std;
 
 int _tmain(int argc, TCHAR *argv[])
 {

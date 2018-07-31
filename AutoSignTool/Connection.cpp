@@ -20,9 +20,16 @@ BOOL Connection::Connect()
     std::wstring strCmdLine = std::wstring(L"net use ") + szSeverName + L" " + szPasswd + L" /user:" + szUserName;
     std::wstring strCmdReturn = ExeCmd(strCmdLine);
 	
-	std::wcout.imbue(std::locale("chs"));	
-	if (strCmdReturn.substr(0, 6) == L"发生系统错误")
+	std::wcout.imbue(std::locale("chs"));
+    if (strCmdReturn.substr(0, 11) == L"发生系统错误 1219") 
+    {
+
+    }
+	else if (strCmdReturn.substr(0, 6) == L"发生系统错误")
+    {
 		std::wcout << strCmdReturn << std::endl; 
+        return FALSE;
+    }
     return TRUE;
 }
 

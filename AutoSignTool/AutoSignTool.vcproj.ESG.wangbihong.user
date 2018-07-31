@@ -11,7 +11,7 @@
 			<DebugSettings
 				Command="$(TargetPath)"
 				WorkingDirectory=""
-				CommandArguments="output=&quot;C:\Users\wangbihong\Desktop\test.cab;1.txt&quot; cab=&quot;C:\Users\wangbihong\Desktop\test1.cab&quot;;&quot;ffuck&quot;"
+				CommandArguments=""
 				Attach="false"
 				DebuggerType="3"
 				Remote="1"

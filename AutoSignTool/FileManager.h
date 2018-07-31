@@ -33,6 +33,8 @@ public:
 
 	static std::wstring PathBackFlashRemove(std::wstring path);
 
+    static void CreateDir(std::wstring path);
+
 private:
     FileManager(){};
     FileManager(const FileManager &){};
