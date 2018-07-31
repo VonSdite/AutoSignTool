@@ -30,3 +30,12 @@
 *.exe
 *.out
 *.app
+*.ncb
+*.vcproj
+*.suo
+*.manifest
+*.htm
+*.dep
+*.idb
+*.ilk
+*.pdb
