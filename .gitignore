@@ -31,7 +31,6 @@
 *.out
 *.app
 *.ncb
-*.vcproj
 *.suo
 *.manifest
 *.htm
@@ -39,3 +38,4 @@
 *.idb
 *.ilk
 *.pdb
+*.res
