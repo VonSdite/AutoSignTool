@@ -13,24 +13,26 @@ using namespace std;
 
 void AutoSign::run()
 {
-    if (bConfigExist && connect->Connect())  // 与共享文件夹建立连接
+    if(bConfigExist) 
     {
-		szDateDirName = FileManager::CreateDateDir(serverInputDirName);
+        if (connect->Connect())  // 与共享文件夹建立连接
+        {
+		    szDateDirName = FileManager::CreateDateDir(serverInputDirName);
 
-        CreateSignIni();            // 生成签名配置文件
+            CreateSignIni();            // 生成签名配置文件
 
-        UploadOk();                 // 生成upload.ok文件
+            UploadOk();                 // 生成upload.ok文件
 
-        GetOutputFile();            // 获取签名成功的文件
+            GetOutputFile();            // 获取签名成功的文件
 
-        connect->DisConnect();      // 断开连接
+            connect->DisConnect();      // 断开连接
+        }
+	    else 
+	    {
+		    std::wcout.imbue(std::locale("chs"));	
+		    wcout << L"[Error 2] 共享文件夹连接失败" << endl;
+	    }
     }
-	else 
-	{
-		std::wcout.imbue(std::locale("chs"));	
-		wcout << L"[Error 2] 共享文件夹连接失败" << endl;
-	}
-
 }
 
 AutoSign::AutoSign(int argc, TCHAR **argv)
