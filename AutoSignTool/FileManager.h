@@ -9,13 +9,13 @@ class FileManager
 {
 public:
      // 创建日期目录, 返回目录路径
-    static std::wstring CreateDateDir(std::wstring szTargetPath);       
+    static std::wstring CreateDateDir(std::wstring strTargetPath);       
 
     // 拷贝文件到指定位置
     static BOOL CopyFileTo(
-        std::wstring lpExistingFileName,
-        std::wstring lpNewFileName,
-        BOOL    bFailIfExists = FALSE
+        std::wstring strExistingFileName,
+        std::wstring strNewFileName,
+        BOOL fFailIfExists = FALSE
     );
 
     static BOOL FileExist(LPCTSTR lpFilePath);
@@ -23,7 +23,7 @@ public:
     static LPTSTR GetFileName(LPCTSTR lpPath);
 
     static void CreateFile(
-        std::wstring lpFileName,
+        std::wstring strFileName,
         DWORD dwDesiredAccess = GENERIC_WRITE,
         DWORD dwShareMode = NULL,
         LPSECURITY_ATTRIBUTES lpSecurityAttributes = NULL,
@@ -31,9 +31,9 @@ public:
         DWORD dwFlagsAndAttributes = FILE_ATTRIBUTE_NORMAL,
         HANDLE hTemplateFile = NULL);
 
-	static std::wstring PathBackFlashRemove(std::wstring path);
+	static std::wstring PathBackFlashRemove(std::wstring strPath);
 
-    static void CreateDir(std::wstring path);
+    static void CreateDir(std::wstring strPath);
 
 private:
     FileManager(){};

@@ -7,17 +7,17 @@
 class CheckThread : public Thread
 {
 private:
-    std::wstring szFileName1;
-    std::wstring szFileName2;
+    std::wstring m_strFileName1;
+    std::wstring m_strFileName2;
 
-    BOOL bSuccess;
+    BOOL m_fSuccess;
 
     virtual void run();
 
 public:
-    CheckThread(std::wstring szFileName1, std::wstring szFileName2);
+    CheckThread(std::wstring strFileName1, std::wstring strFileName2);
     
-    BOOL isSuccess() { return bSuccess; }
+    BOOL isSuccess() { return m_fSuccess; }
 };
 
 #endif

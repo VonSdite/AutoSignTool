@@ -1,11 +1,10 @@
-#include <process.h>
 #include <iostream>
+#include <sstream>
 #include <cstring>
 #include <map>
 
 #include "FileManager.h"
 #include "CheckThread.h"
-#include "Ini.h"
 #include "AutoSign.h"
 #include "Parse.h"
 
@@ -13,201 +12,139 @@ using namespace std;
 
 void AutoSign::run()
 {
-    if(bConfigExist) 
+    if (m_pConnect->Connect())          // 与共享文件夹建立连接
     {
-        if (connect->Connect())  // 与共享文件夹建立连接
-        {
-		    szDateDirName = FileManager::CreateDateDir(serverInputDirName);
+	    m_strDateDirName = FileManager::CreateDateDir(m_pIni->m_mapInfo[L"signInputFile"]);
 
-            CreateSignIni();            // 生成签名配置文件
+        CreateSignIni();                // 生成签名配置文件
 
-            UploadOk();                 // 生成upload.ok文件
+        UploadOk();                     // 生成upload.ok文件
 
-            GetOutputFile();            // 获取签名成功的文件
-
-            connect->DisConnect();      // 断开连接
-        }
+        GetOutputFile();                // 获取签名成功的文件
     }
 }
 
 AutoSign::AutoSign(int argc, TCHAR **argv)
 {
-	bConfigExist = ReadFromConfig(); // 从配置文件读取配置
-	if (bConfigExist)
-	{
-		ParseArgv(argc, argv);
-		connect = new Connection(serverInputDirName, szRemotePassword, szRemoteUserName);
-	}
+    m_pIni = std::tr1::shared_ptr<Ini>(new Ini());
+    m_pErrorPrinter = std::tr1::shared_ptr<ErrorPrinter>(new ErrorPrinter());
+
+    ReadFromConfig();                      // 从配置文件读取配置
+    ParseArgv(argc, argv);                 // 解析命令行参数
+
+    m_pConnect = std::tr1::shared_ptr<Connection>(new Connection(
+        m_pIni->m_mapInfo[L"signInputFile"], 
+        m_pIni->m_mapInfo[L"password"], 
+        m_pIni->m_mapInfo[L"userName"]
+        )
+    );
 }
 
 AutoSign::~AutoSign()
 {
-    delete connect;
 }
 
-BOOL AutoSign::ReadFromConfig()
+wstring AutoSign::GetConfigPath()
 {
+    // 获取程序目录下config.ini的路径
     TCHAR _szPath[MAX_PATH + 1]={0};
     GetModuleFileName(NULL, _szPath, MAX_PATH);
-    (_tcsrchr(_szPath, _T('\\')))[1] = 0; //删除文件名，只获得路径 字串
+    (_tcsrchr(_szPath, _T('\\')))[1] = 0;     
     wstring strConfigPath = _szPath;
-    strConfigPath += L"config.ini";
-    if (!FileManager::FileExist(strConfigPath.c_str()))
-	{
-		std::wcout.imbue(std::locale("chs"));	
-		wcout << L"[Error 1] 找不到配置文件config.ini" << endl;
-		wcout << L"配置文件内容应保存在程序根目录,内容如下:" << endl
-			<< ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;" << endl;
-		wcout << L"[config.ini]" << endl
-			<< L";登录共享文件夹的用户名" << endl
-			<< L"userName=XXX" << endl
-			<< L";登录共享文件夹的用户名对应的密码" << endl
-			<< L"password=XXX" << endl
-			<< L";签名类型" << endl
-			<< L"signType=XXX" << endl
-			<< L";签名服务器的输入目录" << endl
-			<< L"signInputFile=XXX" << endl
-			<< L";签名服务器的输出目录" << endl
-			<< L"signOutputFile=XXX" << endl
-			<< L";签名超时值(分钟为单位)" << endl
-			<< L"timeOut=5" << endl;
-		return FALSE;
-	}
-
-	TCHAR buffer[1000];	
-	memset(buffer, 0, sizeof(buffer));
-
-	Ini::ReadStringFromIni(L"config.ini", L"userName", L"", buffer, 1000, strConfigPath.c_str());
-	szRemoteUserName = buffer;
-
-	Ini::ReadStringFromIni(L"config.ini", L"password", L"", buffer, 1000, strConfigPath.c_str());
-	szRemotePassword = buffer;
-
-	Ini::ReadStringFromIni(L"config.ini", L"signType", L"", buffer, 1000, strConfigPath.c_str());
-	szSignType = buffer;
-
-	Ini::ReadStringFromIni(L"config.ini", L"signInputFile", L"", buffer, 1000, strConfigPath.c_str());
-	serverInputDirName = buffer;
-	serverInputDirName += L"\\";
-
-	Ini::ReadStringFromIni(L"config.ini", L"signOutputFile", L"", buffer, 1000, strConfigPath.c_str());
-	serverOutputDirName = buffer;
-	serverOutputDirName += L"\\";
-
-	nTimeOut = Ini::ReadIntFromIni(L"config.ini", L"timeOut", 5, strConfigPath.c_str()) * 60 * 1000;
-
-	return TRUE;
+    return strConfigPath + L"config.ini";
 }
 
-void trim(std::wstring &s, TCHAR ch) 
+void AutoSign::ReadFromConfig()
 {
-    if (s.empty()) 
-    {
-        return ;
-    }
+    wstring strConfigPath = GetConfigPath();
 
-    s.erase(0, s.find_first_not_of(ch));
-    s.erase(s.find_last_not_of(ch) + 1);
+    if (!FileManager::FileExist(strConfigPath.c_str()))
+	{
+		m_pErrorPrinter->PrintIniError();
+	}
+
+    m_pIni->ReadIni(L"config.ini", strConfigPath.c_str());  // 读取配置文件
+
+    m_pErrorPrinter->CheckIniConfig(m_pIni);
+}
+
+void trim(std::wstring &str, TCHAR ch) 
+{
+    if (str.empty()) 
+        return;
+
+    str.erase(0, str.find_first_not_of(ch));
+    str.erase(str.find_last_not_of(ch) + 1);
 }
 
 void AutoSign::ParseArgv(int argc, TCHAR **argv)
 {
-	std::wcout.imbue(std::locale("chs"));	
 	if (argc != 3)
-	{
-		wcout << L"[Error 4] 命令行参数个数不对" << endl;
-        exit(-1);
-	}
+		m_pErrorPrinter->Print(L"[Error 4] 命令行参数个数不对");
 	else
 	{
 		map<std::wstring, std::wstring> mp;
         mp = Parse::GetPair(argc, argv, L"=");
         if (mp.size() != 2) 
-        {
-            wcout << L"[Error 5] 命令行参数格式不对" << endl;
-            exit(-1);
-        }
-        szOutputPath = mp[L"output"];
-        if (szOutputPath.empty())
-        {
-            wcout << L"[Error 6] 命令行参数缺少最终输出路径, output=XXX" << endl;
-            exit(-1);
-        }
-        szOutputPath += L"\\";
-        //if (szOutputPath[0] != L'\"' || szOutputPath[szOutputPath.size()-1] != L'\"')
-        //{
-        //    wcout << L"[Error 7] 路径应使用英文双引号引起来" << endl;
-        //    exit(-1);
-        //}
-        //trim(szOutputPath, L'\"');
+            m_pErrorPrinter->Print(L"[Error 5] 命令行参数格式不对");
 
-        arrCabPath = Parse::SplitString(mp[L"cab"], L";");
-        if (arrCabPath.empty())
-        {
-            wcout << L"[Error 8] 命令行参数缺少cab文件路径, cab=XXX" << endl;
-            exit(-1);
-        }
+        m_strOutputPath = mp[L"output"];
+        if (m_strOutputPath.empty())
+            m_pErrorPrinter->Print(L"[Error 6] 命令行参数缺少最终输出路径, output=XXX");
+
+        if (m_strOutputPath[m_strOutputPath.length() - 1] != L'\\'
+            || m_strOutputPath[m_strOutputPath.length() - 1] != L'/')
+            m_strOutputPath += L"\\";
+
+        m_vstrCabPath = Parse::SplitString(mp[L"cab"], L";");
+        if (m_vstrCabPath.empty())
+            m_pErrorPrinter->Print(L"[Error 8] 命令行参数缺少cab文件路径, cab=XXX");
         
-        BOOL isCabValid = FALSE; 
-        for (size_t i = 0; i < arrCabPath.size(); ++i)
-        {
-            if (FileManager::FileExist(arrCabPath[i].c_str()))
-            {
-                isCabValid = TRUE;
-                break;
-            }
-        }
-        if (!isCabValid)
-        {
-            wcout << L"[Error 9] 无有效cab文件路径" << endl;
-            exit(-1);
-        }
-        //for (size_t i = 0; i < arrCabPath.size(); ++i)
-        //{
-        //    if (arrCabPath[i][0] != L'\"'|| arrCabPath[i][arrCabPath[i].size()-1] != L'\"')
-        //    {
-        //        wcout << L"[Error 7] 路径应使用英文双引号引起来" << endl;
-        //        exit(-1);
-        //    }
-        //    trim(arrCabPath[i], L'\"');
-        //}
-
+        CheckCabPath();
 	}
+}
+
+void AutoSign::CheckCabPath()
+{
+    BOOL fCabValid = FALSE; 
+    for (size_t i = 0; i < m_vstrCabPath.size(); ++i)
+    {
+        if (FileManager::FileExist(m_vstrCabPath[i].c_str()))
+        {
+            fCabValid = TRUE;
+            break;
+        }
+    }
+    if (!fCabValid)
+        m_pErrorPrinter->Print(L"[Error 9] 无有效cab文件路径");
 }
 
 void AutoSign::CreateSignIni()
 {
-    std::wcout.imbue(std::locale("chs"));	
-    for (size_t i = 0; i < arrCabPath.size(); ++i)
+    wstring strSignInputFile = m_pIni->m_mapInfo[L"signInputFile"] + m_strDateDirName;
+    wstring strSignConfigPath = strSignInputFile + L"sign_config.ini";
+
+    for (size_t i = 0; i < m_vstrCabPath.size(); ++i)
     {
-        LPTSTR lpFileName = FileManager::GetFileName(arrCabPath[i].c_str());
-        if (FileManager::CopyFileTo(
-            arrCabPath[i], 
-            serverInputDirName + szDateDirName + lpFileName
-            )
-        )
+        LPTSTR lpFileName = FileManager::GetFileName(m_vstrCabPath[i].c_str());
+        if (FileManager::CopyFileTo(m_vstrCabPath[i], strSignInputFile + lpFileName))
         {
-            Ini::WriteIni(
-                lpFileName, 
-                L"path", 
-                L"\"" + szDateDirName + lpFileName + L"\"",
-                serverInputDirName + szDateDirName + L"sign_config.ini"
-                );
-            Ini::WriteIni(
-                lpFileName, 
-                L"sign_type", 
-                L"\"" + szSignType + L"\"",
-                serverInputDirName + szDateDirName + L"sign_config.ini"
-                );
+            m_pIni->WriteIni(
+                lpFileName, L"path", 
+                L"\"" + m_strDateDirName + lpFileName + L"\"", strSignConfigPath
+            );
+            m_pIni->WriteIni(
+                lpFileName, L"sign_type", 
+                L"\"" + m_pIni->m_mapInfo[L"signType"] + L"\"", strSignConfigPath
+            );
         }
         else
         {
-            if (!FileManager::FileExist(serverInputDirName.c_str()))
+            if (!FileManager::FileExist(strSignInputFile.c_str()))
             {
-                wcout << "[Error 10] "<< serverInputDirName + L" 签名输入文件路径有误" << endl;
-                exit(-1);
+                m_pErrorPrinter->Print(L"[Error 10] " + m_pIni->m_mapInfo[L"signInputFile"] + L" 签名输入文件路径有误");
             }
-            wcout << arrCabPath[i] + L" 文件不存在" << endl;
+            wcout << m_vstrCabPath[i] + L" 文件不存在" << endl;
         }
     }
 }
@@ -215,46 +152,55 @@ void AutoSign::CreateSignIni()
 void AutoSign::UploadOk()
 {
     // 创建upload.ok 表明签名文件上传结束
-    FileManager::CreateFile(serverInputDirName + szDateDirName + L"upload.ok");
+    FileManager::CreateFile(m_pIni->m_mapInfo[L"signInputFile"] + m_strDateDirName + L"upload.ok");
 }
 
 void AutoSign::GetOutputFile()
 {
-    wstring s = serverOutputDirName + L"文件正确.txt";
+    if (!FileManager::FileExist(m_pIni->m_mapInfo[L"signOutputFile"].c_str()))
+        m_pErrorPrinter->Print(
+            L"[Error 11] " 
+            + m_pIni->m_mapInfo[L"signOutputFile"] 
+            + L" 签名输出文件路径有误"
+        );
+
     CheckThread *checkThread = new CheckThread(
-        serverOutputDirName + szDateDirName, 
-        serverOutputDirName + szDateDirName + L"文件正确.txt"
+        m_pIni->m_mapInfo[L"signOutputFile"] + m_strDateDirName, 
+        m_pIni->m_mapInfo[L"signOutputFile"] + m_strDateDirName + L"文件正确.txt"
     );
     
-	std::wcout.imbue(std::locale("chs"));	
-    if (!FileManager::FileExist(serverOutputDirName.c_str()))
-    {
-        wcout << "[Error 11] "<< serverOutputDirName + L" 签名输出文件路径有误" << endl;
-        exit(-1);
-    }
-	wcout << L"正在签名\n";
-    checkThread->start(nTimeOut);
+    wcout << L"正在签名\n";
+    std::wistringstream ss(m_pIni->m_mapInfo[L"timeOut"]);
+    DWORD dwTimeOut;
+    ss >> dwTimeOut;
+    checkThread->start(dwTimeOut * 60 * 1000);
+
     if (checkThread->isSuccess())
     {
-        if (!FileManager::FileExist(szOutputPath.c_str()))
-        {
-            FileManager::CreateDir(szOutputPath);
-        }
-
-        for (size_t i = 0; i < arrCabPath.size(); ++i)
-        {
-            LPTSTR lpFileName = FileManager::GetFileName(arrCabPath[i].c_str());
-            FileManager::CopyFileTo(
-                serverOutputDirName + szDateDirName + lpFileName, 
-                szOutputPath + lpFileName
-            );
-        }
+        CopyToOutputPath();
 		wcout << L"\n[Successful] 签名成功\n";
     }
     else 
     {
-		wcout << L"\n[Error 3] 签名失败, 请重试\n";
+		m_pErrorPrinter->Print(L"\n[Error 3] 签名失败, 请重试");
     }
 
     delete checkThread;
+}
+
+void AutoSign::CopyToOutputPath()
+{
+    if (!FileManager::FileExist(m_strOutputPath.c_str()))
+    {
+        FileManager::CreateDir(m_strOutputPath);
+    }
+
+    for (size_t i = 0; i < m_vstrCabPath.size(); ++i)
+    {
+        LPTSTR lpFileName = FileManager::GetFileName(m_vstrCabPath[i].c_str());
+        FileManager::CopyFileTo(
+            m_pIni->m_mapInfo[L"signOutputFile"] + m_strDateDirName + lpFileName, 
+            m_strOutputPath + lpFileName
+            );
+    }
 }

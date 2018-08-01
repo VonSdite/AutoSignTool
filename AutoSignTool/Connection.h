@@ -8,18 +8,18 @@
 class Connection
 {
 public:
-    Connection(std::wstring severName, std::wstring passwd, std::wstring userName);
-
+    Connection(std::wstring strSeverName, std::wstring strPasswd, std::wstring strUserName);
     BOOL Connect();
+
     void DisConnect();
 
 private:
-    std::wstring szSeverName;
-    std::wstring szPasswd;
-    std::wstring szUserName;
+    std::wstring m_strSeverName;
+    std::wstring m_strPasswd;
+    std::wstring m_strUserName;
 
 	std::wstring ExeCmd(std::wstring strCmdLine);
-
+    
 };
 
 #endif

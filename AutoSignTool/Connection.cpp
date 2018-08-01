@@ -7,27 +7,25 @@
 
 std::wstring ExeCmd(std::wstring pszCmd);
 
-Connection::Connection(std::wstring szSeverName, std::wstring szPasswd, std::wstring szUserName)
+Connection::Connection(std::wstring strSeverName, std::wstring strPasswd, std::wstring strUserName)
 {
-	szSeverName = FileManager::PathBackFlashRemove(szSeverName);
-    this->szSeverName = szSeverName;
-    this->szPasswd = szPasswd;
-    this->szUserName = szUserName;
+	strSeverName = FileManager::PathBackFlashRemove(strSeverName);
+    this->m_strSeverName = strSeverName;
+    this->m_strPasswd = strPasswd;
+    this->m_strUserName = strUserName;
 }
 
 BOOL Connection::Connect()
 {
-    std::wstring strCmdLine = std::wstring(L"net use ") + szSeverName + L" " + szPasswd + L" /user:" + szUserName;
+    std::wstring strCmdLine = std::wstring(L"net use ") + m_strSeverName + L" " + m_strPasswd + L" /user:" + m_strUserName;
     std::wstring strCmdReturn = ExeCmd(strCmdLine);
 	
-	std::wcout.imbue(std::locale("chs"));
     if (strCmdReturn.substr(0, 11) == L"发生系统错误 1219") 
     {
-
     }
 	else if (strCmdReturn.substr(0, 6) == L"发生系统错误")
     {
-		std::wcout << L"[Error 2] 共享文件夹连接失败\n" << strCmdReturn << std::endl; 
+		std::wcout << L"[Error 2] 共享文件夹连接失败，请检查用户名、密码以及共享文件夹路径\n" << strCmdReturn << std::endl; 
         return FALSE;
     }
     return TRUE;
@@ -35,12 +33,12 @@ BOOL Connection::Connect()
 
 void Connection::DisConnect()
 {
-	std::wstring strCmdLine = std::wstring(L"net use ") + szSeverName + L" /d /y";
+	std::wstring strCmdLine = std::wstring(L"net use ") + m_strSeverName + L" /d /y";
 	ExeCmd(strCmdLine);
 }
 
 
-std::wstring Connection::ExeCmd(std::wstring pszCmd)
+std::wstring Connection::ExeCmd(std::wstring strCmdLine)
 {
     // 创建匿名管道
     SECURITY_ATTRIBUTES sa = {sizeof(SECURITY_ATTRIBUTES), NULL, TRUE};
@@ -60,7 +58,7 @@ std::wstring Connection::ExeCmd(std::wstring pszCmd)
 
     // 启动命令行
     PROCESS_INFORMATION pi;
-    if (!CreateProcess(NULL, (LPWSTR)pszCmd.c_str(), NULL, NULL, TRUE, NULL, NULL, NULL, &si, &pi))
+    if (!CreateProcess(NULL, (LPWSTR)strCmdLine.c_str(), NULL, NULL, TRUE, NULL, NULL, NULL, &si, &pi))
     {
         return TEXT("Cannot create process");
     }

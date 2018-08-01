@@ -183,6 +183,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Error.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\FileManager.cpp"
 				>
 			</File>
@@ -214,6 +218,10 @@
 			</File>
 			<File
 				RelativePath=".\Connection.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Error.h"
 				>
 			</File>
 			<File

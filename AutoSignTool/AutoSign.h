@@ -5,7 +5,11 @@
 #include <tchar.h>
 #include <string>
 #include <vector>
+#include <memory>
+
 #include "Connection.h"
+#include "Error.h"
+#include "Ini.h"
 
 class AutoSign
 {
@@ -15,29 +19,25 @@ public:
     void run();
 
 private:
-	BOOL bConfigExist;
-	std::vector<std::wstring> arrCabPath;				// cab文件的路径
-	std::wstring szOutputPath;							// 最终签名文件保存的位置
+    std::vector<std::wstring> m_vstrCabPath;    // cab文件的路径
 
-	BOOL ReadFromConfig();								// 读取配置文件
-	void ParseArgv(int argc, TCHAR **argv);		// 解析命令行参数
+    std::wstring m_strOutputPath;               // 最终签名文件保存的位置
+    std::wstring m_strDateDirName;              // 日期目录
 
-    // 以下从配置文件读入
-    std::wstring szRemoteUserName;   // 登录共享文件夹用户名
-    std::wstring szRemotePassword;   // 登录共享文件夹的密码
-    std::wstring szSignType;         // 签名类型
-    DWORD nTimeOut;                  // 超时值
-    std::wstring serverInputDirName; // 签名输入目录
-    std::wstring serverOutputDirName;// 签名输出目录
+    std::tr1::shared_ptr<Ini> m_pIni;           // Ini配置文件信息
+    std::tr1::shared_ptr<Connection> m_pConnect;// 共享文件夹连接
+    std::tr1::shared_ptr<ErrorPrinter> m_pErrorPrinter;// 错误信息输出者
 
+    std::wstring GetConfigPath();               // 获取配置文件路径
+    void ReadFromConfig();                      // 读取配置文件
 
-    Connection *connect;             // 共享文件夹连接
-    std::wstring szDateDirName;      // 日期目录
-    
+    void ParseArgv(int argc, TCHAR **argv);     // 解析命令行参数
+    void CheckCabPath();                        // 检查cab路径是否有效
+    void CopyToOutputPath();                    // 复制到指定付出路径
 
-    void CreateSignIni();            // 生成签名配置文件ini
-    void UploadOk();                 // 生成upload.ok
-    void GetOutputFile();            // 获取签名输出文件
+    void CreateSignIni();                       // 生成签名配置文件ini
+    void UploadOk();                            // 生成upload.ok
+    void GetOutputFile();                       // 获取签名输出文件
 };
 
 #endif

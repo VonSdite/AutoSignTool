@@ -9,8 +9,8 @@
 std::wstring FileManager::CreateDateDir(const std::wstring szTargetPath)
 {
     // 设置随机数种子
-    static BOOL isSetRand = FALSE;
-    if (!isSetRand) 
+    static BOOL fSetRand = FALSE;
+    if (!fSetRand) 
     {
         srand((DWORD)time(NULL));
     }
@@ -51,9 +51,6 @@ BOOL FileManager::CopyFileTo(
 
 BOOL FileManager::FileExist(LPCTSTR lpFilePath)
 {
-	/*WIN32_FIND_DATA wfd;
-	HANDLE hFind = FindFirstFile(lpFilePath, &wfd);
-	return (hFind != INVALID_HANDLE_VALUE) && (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);*/
     return PathFileExists(lpFilePath);
 }
 

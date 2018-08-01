@@ -2,25 +2,25 @@
 #include "FileManager.h"
 #include <stdio.h>
 
-CheckThread::CheckThread(std::wstring szFileName1, std::wstring szFileName2)  
+CheckThread::CheckThread(std::wstring strFileName1, std::wstring strFileName2)  
 {  
-    this->szFileName1 = szFileName1;
-    this->szFileName2 = szFileName2;
-    this->bSuccess = FALSE;
+    this->m_strFileName1 = strFileName1;
+    this->m_strFileName2 = strFileName2;
+    this->m_fSuccess = FALSE;
 }  
 
 void CheckThread::run()
 {
-    while (!FileManager::FileExist(szFileName1.c_str()))
+    while (!FileManager::FileExist(m_strFileName1.c_str()))
     {
         _tprintf(L".");
         Sleep(3000);
     }
 
-    if (!FileManager::FileExist(szFileName2.c_str()))
+    if (!FileManager::FileExist(m_strFileName2.c_str()))
     {
         return ;
     }
     
-    this->bSuccess = TRUE;
+    this->m_fSuccess = TRUE;
 }

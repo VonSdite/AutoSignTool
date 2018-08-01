@@ -10,9 +10,9 @@
 class Parse
 {
 public:
-    static std::map<std::wstring, std::wstring> GetPair(int argc, TCHAR **argv, LPTSTR splitString);
+    static std::map<std::wstring, std::wstring> GetPair(int argc, TCHAR **argv, LPTSTR strSplit);
 
-    static std::vector<std::wstring> SplitString(const std::wstring s, const std::wstring c);
+    static std::vector<std::wstring> SplitString(const std::wstring strOrigin, const std::wstring strSplit);
 
 private:
     Parse() {};
