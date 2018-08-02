@@ -40,3 +40,4 @@
 *.pdb
 *.res
 Debug/config.ini
+*.user

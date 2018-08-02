@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <strsafe.h>
-#include <sstream>
+#include <stdio.h>
 #include <shlwapi.h>
 #pragma comment(lib, "shlwapi.lib") 
 
@@ -20,24 +20,19 @@ std::wstring FileManager::CreateDateDir(const std::wstring szTargetPath)
     GetLocalTime(&localTime);
 
     // 要创建的目录名
-    std::wstringstream ss;
-    ss << L"ENTSign_" 
-        << localTime.wYear
-        << localTime.wMonth
-        << localTime.wDay
-        << localTime.wMilliseconds
-        << L"_"
-        << rand() % 0x10000
-        << rand() % 0x10000
-        << L"\\";
-    std::wstring szDirName = ss.str();
+    TCHAR szDirName[200] = {0};
+    swprintf_s(szDirName, 200, L"ENTSign_%d%02d%02d_%03d%04x%04x\\", 
+        localTime.wYear, localTime.wMonth, 
+        localTime.wDay, localTime.wMilliseconds, 
+        rand() % 0x10000, rand() % 0x10000);
+    std::wstring strDirName = szDirName;
 
     // 在指定路径创建文件夹
-    std::wstring szDir = szTargetPath + szDirName;
+    std::wstring szDir = szTargetPath + strDirName;
    
     CreateDirectory(szDir.c_str(), NULL);
 
-    return szDirName;
+    return strDirName;
 }
 
 BOOL FileManager::CopyFileTo( 
