@@ -13,8 +13,8 @@ void ErrorPrinter::Print(std::wstring strErrorInfo)
 
 void ErrorPrinter::PrintIniError()
 {
-    std::wcout << L"[Error 1] 配置文件config.ini有误" << std::endl;
-    std::wcout << L"配置文件内容应保存在程序根目录,内容如下:" << std::endl 
+    std::wcout << L"[Error 1] 配置文件sign_cab_config.ini有误" << std::endl;
+    std::wcout << L"配置文件内容应保存在程序根目录的conf目录下,内容如下:" << std::endl 
                << std::endl;
     std::wcout << L"[config.ini]" << std::endl
         << L";登录共享文件夹的用户名(选填)" << std::endl

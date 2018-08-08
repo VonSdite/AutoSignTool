@@ -51,7 +51,7 @@ wstring AutoSign::GetConfigPath()
     GetModuleFileName(NULL, _szPath, MAX_PATH);
     (_tcsrchr(_szPath, _T('\\')))[1] = 0;     
     wstring strConfigPath = _szPath;
-    return strConfigPath + L"config.ini";
+    return strConfigPath + L"conf\\sign_cab_config.ini";
 }
 
 void AutoSign::ReadFromConfig()
