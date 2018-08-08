@@ -45,3 +45,4 @@ AutoSignTool/Debug/*
 AutoSignTool/Release/*
 *.user
 *.ini
+*.aps
