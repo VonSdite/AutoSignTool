@@ -122,7 +122,7 @@ void AutoSign::CheckCabPath()
 void AutoSign::CreateSignIni()
 {
     wstring strSignInputFile = m_pIni->m_mapInfo[L"signInputFile"] + m_strDateDirName;
-    wstring strSignConfigPath = strSignInputFile + L"sign_config.ini";
+    wstring strSignConfigPath = m_pIni->m_mapInfo[L"signInputFile"] + L"\\sign_config.ini";
 
     for (size_t i = 0; i < m_vstrCabPath.size(); ++i)
     {
@@ -152,7 +152,7 @@ void AutoSign::CreateSignIni()
 void AutoSign::UploadOk()
 {
     // 创建upload.ok 表明签名文件上传结束
-    FileManager::CreateFile(m_pIni->m_mapInfo[L"signInputFile"] + m_strDateDirName + L"upload.ok");
+    FileManager::CreateFile(m_pIni->m_mapInfo[L"signInputFile"] + L"\\upload.ok");
 }
 
 void AutoSign::GetOutputFile()
@@ -169,7 +169,7 @@ void AutoSign::GetOutputFile()
         m_pIni->m_mapInfo[L"signOutputFile"] + m_strDateDirName + L"文件正确.txt"
     );
     
-    wcout << L"正在签名\n";
+    wcout << L"正在签名\n等待";
     std::wistringstream ss(m_pIni->m_mapInfo[L"timeOut"]);
     DWORD dwTimeOut;
     ss >> dwTimeOut;

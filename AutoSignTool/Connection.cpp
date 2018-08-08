@@ -17,6 +17,10 @@ Connection::Connection(std::wstring strSeverName, std::wstring strPasswd, std::w
 
 BOOL Connection::Connect()
 {
+    // 当用户名或密码为空时，不需要登录
+    if (m_strUserName.empty() || m_strPasswd.empty())
+        return TRUE;
+
     std::wstring strCmdLine = std::wstring(L"net use ") + m_strSeverName + L" " + m_strPasswd + L" /user:" + m_strUserName;
     std::wstring strCmdReturn = ExeCmd(strCmdLine);
 	

@@ -1,6 +1,7 @@
 #include "Parse.h"
 #include <string.h>
 #include <stdlib.h>
+#include <algorithm>
 
 std::vector<std::wstring> Parse::SplitString(const std::wstring strOrigin, const std::wstring strSplit)
 {
@@ -31,6 +32,7 @@ std::map<std::wstring, std::wstring> Parse::GetPair(int argc, TCHAR **argv, LPTS
         {
             continue;
         }
+        std::transform(tmp[0].begin(), tmp[0].end(), tmp[0].begin(), towlower);
         mp[tmp[0]] = tmp[1];
     }
     return mp;

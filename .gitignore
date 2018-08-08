@@ -39,5 +39,9 @@
 *.ilk
 *.pdb
 *.res
-Debug/config.ini
+Debug/*
+Release/*
+AutoSignTool/Debug/*
+AutoSignTool/Release/*
 *.user
+*.ini

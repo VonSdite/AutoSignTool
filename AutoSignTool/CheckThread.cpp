@@ -14,7 +14,7 @@ void CheckThread::run()
     while (!FileManager::FileExist(m_strFileName1.c_str()))
     {
         _tprintf(L".");
-        Sleep(3000);
+        Sleep(10000);
     }
 
     if (!FileManager::FileExist(m_strFileName2.c_str()))
